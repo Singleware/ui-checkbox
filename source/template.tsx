@@ -130,7 +130,7 @@ export class Template extends Control.Component<Properties> {
    */
   @Class.Private()
   private bindHandlers(): void {
-    this.skeleton.addEventListener('click', Class.bindCallback(this.clickHandler), true);
+    this.skeleton.addEventListener('click', this.clickHandler.bind(this), true);
   }
 
   /**
@@ -139,12 +139,12 @@ export class Template extends Control.Component<Properties> {
   @Class.Private()
   private bindProperties(): void {
     Object.defineProperties(this.skeleton, {
-      name: super.bindDescriptor(Template.prototype, 'name'),
-      value: super.bindDescriptor(Template.prototype, 'value'),
-      checked: super.bindDescriptor(Template.prototype, 'checked'),
-      required: super.bindDescriptor(Template.prototype, 'required'),
-      readOnly: super.bindDescriptor(Template.prototype, 'readOnly'),
-      disabled: super.bindDescriptor(Template.prototype, 'disabled')
+      name: super.bindDescriptor(this, Template.prototype, 'name'),
+      value: super.bindDescriptor(this, Template.prototype, 'value'),
+      checked: super.bindDescriptor(this, Template.prototype, 'checked'),
+      required: super.bindDescriptor(this, Template.prototype, 'required'),
+      readOnly: super.bindDescriptor(this, Template.prototype, 'readOnly'),
+      disabled: super.bindDescriptor(this, Template.prototype, 'disabled')
     });
   }
 

@@ -9,8 +9,7 @@ import * as DOM from '@singleware/jsx';
 
 const field = (
   <Checkbox.Template>
-    <span slot="prepend">Front label</span>
-    <span slot="append">Back label</span>
+    <div slot="mark" />
   </Checkbox.Template>
 ) as Checkbox.Element;
 

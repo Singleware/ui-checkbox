@@ -119,19 +119,19 @@ let Template = Template_1 = class Template extends Control.Component {
      * Bind event handlers to update the custom element.
      */
     bindHandlers() {
-        this.skeleton.addEventListener('click', Class.bindCallback(this.clickHandler), true);
+        this.skeleton.addEventListener('click', this.clickHandler.bind(this), true);
     }
     /**
      * Bind exposed properties to the custom element.
      */
     bindProperties() {
         Object.defineProperties(this.skeleton, {
-            name: super.bindDescriptor(Template_1.prototype, 'name'),
-            value: super.bindDescriptor(Template_1.prototype, 'value'),
-            checked: super.bindDescriptor(Template_1.prototype, 'checked'),
-            required: super.bindDescriptor(Template_1.prototype, 'required'),
-            readOnly: super.bindDescriptor(Template_1.prototype, 'readOnly'),
-            disabled: super.bindDescriptor(Template_1.prototype, 'disabled')
+            name: super.bindDescriptor(this, Template_1.prototype, 'name'),
+            value: super.bindDescriptor(this, Template_1.prototype, 'value'),
+            checked: super.bindDescriptor(this, Template_1.prototype, 'checked'),
+            required: super.bindDescriptor(this, Template_1.prototype, 'required'),
+            readOnly: super.bindDescriptor(this, Template_1.prototype, 'readOnly'),
+            disabled: super.bindDescriptor(this, Template_1.prototype, 'disabled')
         });
     }
     /**
