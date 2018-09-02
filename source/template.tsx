@@ -15,6 +15,14 @@ import { Element } from './element';
 @Class.Describe()
 export class Template extends Control.Component<Properties> {
   /**
+   * Checkbox states.
+   */
+  @Class.Private()
+  private states = {
+    name: ''
+  };
+
+  /**
    * Input element.
    */
   @Class.Private()
@@ -98,20 +106,38 @@ export class Template extends Control.Component<Properties> {
   private elements: ShadowRoot = DOM.append(this.skeleton.attachShadow({ mode: 'closed' }), this.styles, this.checkbox) as ShadowRoot;
 
   /**
-   * Enable or disable the specified property in the mark elements.
+   * Enable or disable the specified property in this elements.
    * @param property Property name.
    * @param state Determines whether the property must be enabled or disabled.
    */
-  @Class.Private()
-  private setMarkProperty(property: string, state: boolean): void {
-    const list = this.markSlot.assignedNodes() as HTMLElement[];
-    for (const mark of list) {
-      if (state) {
-        mark.dataset[property] = 'on';
-      } else {
-        delete mark.dataset[property];
-      }
+  @Class.Protected()
+  protected setDataProperty(property: string, state: boolean): void {
+    if (state) {
+      this.skeleton.dataset[property] = 'on';
+    } else {
+      delete this.skeleton.dataset[property];
     }
+  }
+
+  /**
+   * Toggles this check by the last toggled check.
+   * @param force Determines whether the same check must be toggled.
+   * @returns Returns the last check or undefined when there is no last check.
+   */
+  @Class.Private()
+  private toggleCheck(force: boolean): Element | undefined {
+    const last = Template.groups[this.group];
+    if (last === this.skeleton) {
+      if (force) {
+        Template.groups[this.group] = void 0;
+      }
+    } else {
+      if (last) {
+        last.checked = false;
+      }
+      Template.groups[this.group] = this.skeleton;
+    }
+    return last;
   }
 
   /**
@@ -122,6 +148,15 @@ export class Template extends Control.Component<Properties> {
   private clickHandler(event: Event): void {
     if (this.input.readOnly) {
       event.preventDefault();
+    } else {
+      if (this.group) {
+        const last = this.toggleCheck(!this.checked);
+        if (last && last !== this.skeleton) {
+          Template.notifyChanges(last);
+        }
+      }
+      this.setDataProperty('checked', this.input.checked);
+      Template.notifyChanges(this.skeleton);
     }
   }
 
@@ -130,7 +165,7 @@ export class Template extends Control.Component<Properties> {
    */
   @Class.Private()
   private bindHandlers(): void {
-    this.skeleton.addEventListener('click', this.clickHandler.bind(this), true);
+    this.input.addEventListener('click', this.clickHandler.bind(this));
   }
 
   /**
@@ -140,6 +175,7 @@ export class Template extends Control.Component<Properties> {
   private bindProperties(): void {
     Object.defineProperties(this.skeleton, {
       name: super.bindDescriptor(this, Template.prototype, 'name'),
+      group: super.bindDescriptor(this, Template.prototype, 'group'),
       value: super.bindDescriptor(this, Template.prototype, 'value'),
       checked: super.bindDescriptor(this, Template.prototype, 'checked'),
       required: super.bindDescriptor(this, Template.prototype, 'required'),
@@ -153,7 +189,7 @@ export class Template extends Control.Component<Properties> {
    */
   @Class.Private()
   private assignProperties(): void {
-    Control.assignProperties(this, this.properties, ['name', 'value', 'checked', 'required', 'readOnly', 'disabled']);
+    Control.assignProperties(this, this.properties, ['name', 'group', 'value', 'checked', 'required', 'readOnly', 'disabled']);
   }
 
   /**
@@ -173,13 +209,28 @@ export class Template extends Control.Component<Properties> {
    */
   @Class.Public()
   public get name(): string {
-    return this.input.name;
+    return this.states.name;
   }
 
   /**
    * Set checkbox name.
    */
   public set name(name: string) {
+    this.states.name = name;
+  }
+
+  /**
+   * Get checkbox group.
+   */
+  @Class.Public()
+  public get group(): string {
+    return this.input.name;
+  }
+
+  /**
+   * Set checkbox group.
+   */
+  public set group(name: string) {
     this.input.name = name;
   }
 
@@ -210,7 +261,11 @@ export class Template extends Control.Component<Properties> {
    * Set checked state.
    */
   public set checked(state: boolean) {
+    this.setDataProperty('checked', state);
     this.input.checked = state;
+    if (this.group) {
+      this.toggleCheck(!state);
+    }
   }
 
   /**
@@ -225,6 +280,7 @@ export class Template extends Control.Component<Properties> {
    * Set required state.
    */
   public set required(state: boolean) {
+    this.setDataProperty('required', state);
     this.input.required = state;
   }
 
@@ -240,7 +296,7 @@ export class Template extends Control.Component<Properties> {
    * Set read-only state.
    */
   public set readOnly(state: boolean) {
-    this.setMarkProperty('readonly', state);
+    this.setDataProperty('readonly', state);
     this.input.readOnly = state;
   }
 
@@ -256,7 +312,7 @@ export class Template extends Control.Component<Properties> {
    * Set disabled state.
    */
   public set disabled(state: boolean) {
-    this.setMarkProperty('disabled', state);
+    this.setDataProperty('disabled', state);
     this.input.disabled = state;
   }
 
@@ -266,5 +322,21 @@ export class Template extends Control.Component<Properties> {
   @Class.Public()
   public get element(): Element {
     return this.skeleton;
+  }
+
+  /**
+   * Checkbox groups.
+   */
+  @Class.Private()
+  private static groups = {} as any;
+
+  /**
+   * Notify element changes.
+   */
+  @Class.Private()
+  private static notifyChanges(element: Element): void {
+    if (document.body.contains(element)) {
+      element.dispatchEvent(new Event('change', { bubbles: true, cancelable: false }));
+    }
   }
 }

@@ -12,6 +12,10 @@ export interface Element extends HTMLDivElement {
    */
   name: string;
   /**
+   * Checkbox group.
+   */
+  group: string;
+  /**
    * Checkbox value.
    */
   value: any;

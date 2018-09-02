@@ -6,6 +6,10 @@ import { Element } from './element';
  */
 export declare class Template extends Control.Component<Properties> {
     /**
+     * Checkbox states.
+     */
+    private states;
+    /**
      * Input element.
      */
     private input;
@@ -30,11 +34,17 @@ export declare class Template extends Control.Component<Properties> {
      */
     private elements;
     /**
-     * Enable or disable the specified property in the mark elements.
+     * Enable or disable the specified property in this elements.
      * @param property Property name.
      * @param state Determines whether the property must be enabled or disabled.
      */
-    private setMarkProperty;
+    protected setDataProperty(property: string, state: boolean): void;
+    /**
+     * Toggles this check by the last toggled check.
+     * @param force Determines whether the same check must be toggled.
+     * @returns Returns the last check or undefined when there is no last check.
+     */
+    private toggleCheck;
     /**
      * Click event handler.
      * @param event Event information.
@@ -65,6 +75,13 @@ export declare class Template extends Control.Component<Properties> {
     * Set checkbox name.
     */
     name: string;
+    /**
+     * Get checkbox group.
+     */
+    /**
+    * Set checkbox group.
+    */
+    group: string;
     /**
      * Get checkbox value.
      */
@@ -104,4 +121,12 @@ export declare class Template extends Control.Component<Properties> {
      * Checkbox element.
      */
     readonly element: Element;
+    /**
+     * Checkbox groups.
+     */
+    private static groups;
+    /**
+     * Notify element changes.
+     */
+    private static notifyChanges;
 }

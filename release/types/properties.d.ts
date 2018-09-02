@@ -20,6 +20,10 @@ export interface Properties {
    */
   name?: string;
   /**
+   * Checkbox group.
+   */
+  group?: string;
+  /**
    * Checkbox value.
    */
   value?: any;

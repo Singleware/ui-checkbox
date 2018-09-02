@@ -27,6 +27,12 @@ let Template = Template_1 = class Template extends Control.Component {
     constructor(properties, children) {
         super(properties, children);
         /**
+         * Checkbox states.
+         */
+        this.states = {
+            name: ''
+        };
+        /**
          * Input element.
          */
         this.input = DOM.create("input", { type: "checkbox" });
@@ -91,20 +97,37 @@ let Template = Template_1 = class Template extends Control.Component {
         this.assignProperties();
     }
     /**
-     * Enable or disable the specified property in the mark elements.
+     * Enable or disable the specified property in this elements.
      * @param property Property name.
      * @param state Determines whether the property must be enabled or disabled.
      */
-    setMarkProperty(property, state) {
-        const list = this.markSlot.assignedNodes();
-        for (const mark of list) {
-            if (state) {
-                mark.dataset[property] = 'on';
-            }
-            else {
-                delete mark.dataset[property];
+    setDataProperty(property, state) {
+        if (state) {
+            this.skeleton.dataset[property] = 'on';
+        }
+        else {
+            delete this.skeleton.dataset[property];
+        }
+    }
+    /**
+     * Toggles this check by the last toggled check.
+     * @param force Determines whether the same check must be toggled.
+     * @returns Returns the last check or undefined when there is no last check.
+     */
+    toggleCheck(force) {
+        const last = Template_1.groups[this.group];
+        if (last === this.skeleton) {
+            if (force) {
+                Template_1.groups[this.group] = void 0;
             }
         }
+        else {
+            if (last) {
+                last.checked = false;
+            }
+            Template_1.groups[this.group] = this.skeleton;
+        }
+        return last;
     }
     /**
      * Click event handler.
@@ -114,12 +137,22 @@ let Template = Template_1 = class Template extends Control.Component {
         if (this.input.readOnly) {
             event.preventDefault();
         }
+        else {
+            if (this.group) {
+                const last = this.toggleCheck(!this.checked);
+                if (last && last !== this.skeleton) {
+                    Template_1.notifyChanges(last);
+                }
+            }
+            this.setDataProperty('checked', this.input.checked);
+            Template_1.notifyChanges(this.skeleton);
+        }
     }
     /**
      * Bind event handlers to update the custom element.
      */
     bindHandlers() {
-        this.skeleton.addEventListener('click', this.clickHandler.bind(this), true);
+        this.input.addEventListener('click', this.clickHandler.bind(this));
     }
     /**
      * Bind exposed properties to the custom element.
@@ -127,6 +160,7 @@ let Template = Template_1 = class Template extends Control.Component {
     bindProperties() {
         Object.defineProperties(this.skeleton, {
             name: super.bindDescriptor(this, Template_1.prototype, 'name'),
+            group: super.bindDescriptor(this, Template_1.prototype, 'group'),
             value: super.bindDescriptor(this, Template_1.prototype, 'value'),
             checked: super.bindDescriptor(this, Template_1.prototype, 'checked'),
             required: super.bindDescriptor(this, Template_1.prototype, 'required'),
@@ -138,18 +172,30 @@ let Template = Template_1 = class Template extends Control.Component {
      * Assign all element properties.
      */
     assignProperties() {
-        Control.assignProperties(this, this.properties, ['name', 'value', 'checked', 'required', 'readOnly', 'disabled']);
+        Control.assignProperties(this, this.properties, ['name', 'group', 'value', 'checked', 'required', 'readOnly', 'disabled']);
     }
     /**
      * Get checkbox name.
      */
     get name() {
-        return this.input.name;
+        return this.states.name;
     }
     /**
      * Set checkbox name.
      */
     set name(name) {
+        this.states.name = name;
+    }
+    /**
+     * Get checkbox group.
+     */
+    get group() {
+        return this.input.name;
+    }
+    /**
+     * Set checkbox group.
+     */
+    set group(name) {
         this.input.name = name;
     }
     /**
@@ -174,7 +220,11 @@ let Template = Template_1 = class Template extends Control.Component {
      * Set checked state.
      */
     set checked(state) {
+        this.setDataProperty('checked', state);
         this.input.checked = state;
+        if (this.group) {
+            this.toggleCheck(!state);
+        }
     }
     /**
      * Get required state.
@@ -186,6 +236,7 @@ let Template = Template_1 = class Template extends Control.Component {
      * Set required state.
      */
     set required(state) {
+        this.setDataProperty('required', state);
         this.input.required = state;
     }
     /**
@@ -198,7 +249,7 @@ let Template = Template_1 = class Template extends Control.Component {
      * Set read-only state.
      */
     set readOnly(state) {
-        this.setMarkProperty('readonly', state);
+        this.setDataProperty('readonly', state);
         this.input.readOnly = state;
     }
     /**
@@ -211,7 +262,7 @@ let Template = Template_1 = class Template extends Control.Component {
      * Set disabled state.
      */
     set disabled(state) {
-        this.setMarkProperty('disabled', state);
+        this.setDataProperty('disabled', state);
         this.input.disabled = state;
     }
     /**
@@ -220,7 +271,22 @@ let Template = Template_1 = class Template extends Control.Component {
     get element() {
         return this.skeleton;
     }
+    /**
+     * Notify element changes.
+     */
+    static notifyChanges(element) {
+        if (document.body.contains(element)) {
+            element.dispatchEvent(new Event('change', { bubbles: true, cancelable: false }));
+        }
+    }
 };
+/**
+ * Checkbox groups.
+ */
+Template.groups = {};
+__decorate([
+    Class.Private()
+], Template.prototype, "states", void 0);
 __decorate([
     Class.Private()
 ], Template.prototype, "input", void 0);
@@ -240,8 +306,11 @@ __decorate([
     Class.Private()
 ], Template.prototype, "elements", void 0);
 __decorate([
+    Class.Protected()
+], Template.prototype, "setDataProperty", null);
+__decorate([
     Class.Private()
-], Template.prototype, "setMarkProperty", null);
+], Template.prototype, "toggleCheck", null);
 __decorate([
     Class.Private()
 ], Template.prototype, "clickHandler", null);
@@ -257,6 +326,9 @@ __decorate([
 __decorate([
     Class.Public()
 ], Template.prototype, "name", null);
+__decorate([
+    Class.Public()
+], Template.prototype, "group", null);
 __decorate([
     Class.Public()
 ], Template.prototype, "value", null);
@@ -275,6 +347,12 @@ __decorate([
 __decorate([
     Class.Public()
 ], Template.prototype, "element", null);
+__decorate([
+    Class.Private()
+], Template, "groups", void 0);
+__decorate([
+    Class.Private()
+], Template, "notifyChanges", null);
 Template = Template_1 = __decorate([
     Class.Describe()
 ], Template);
