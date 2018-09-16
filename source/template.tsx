@@ -8,6 +8,7 @@ import * as Control from '@singleware/ui-control';
 
 import { Properties } from './properties';
 import { Element } from './element';
+import { States } from './states';
 
 /**
  * Checkbox template class.
@@ -20,25 +21,25 @@ export class Template extends Control.Component<Properties> {
   @Class.Private()
   private states = {
     name: ''
-  };
+  } as States;
 
   /**
    * Input element.
    */
   @Class.Private()
-  private input: HTMLInputElement = <input type="checkbox" /> as HTMLInputElement;
+  private input = <input type="checkbox" /> as HTMLInputElement;
 
   /**
    * Mark element.
    */
   @Class.Private()
-  private markSlot: HTMLSlotElement = <slot name="mark" class="mark" /> as HTMLSlotElement;
+  private markSlot = <slot name="mark" class="mark" /> as HTMLSlotElement;
 
   /**
    * Checkbox element.
    */
   @Class.Private()
-  private checkbox: HTMLLabelElement = (
+  private checkbox = (
     <label class="checkbox">
       {this.input}
       {this.markSlot}
@@ -49,7 +50,7 @@ export class Template extends Control.Component<Properties> {
    * Checkbox styles.
    */
   @Class.Private()
-  private styles: HTMLStyleElement = (
+  private styles = (
     <style>
       {`:host {
   display: flex;
@@ -93,17 +94,11 @@ export class Template extends Control.Component<Properties> {
    * Checkbox skeleton.
    */
   @Class.Private()
-  private skeleton: Element = (
+  private skeleton = (
     <div slot={this.properties.slot} class={this.properties.class}>
       {this.children}
     </div>
   ) as Element;
-
-  /**
-   * Checkbox elements.
-   */
-  @Class.Private()
-  private elements: ShadowRoot = DOM.append(this.skeleton.attachShadow({ mode: 'closed' }), this.styles, this.checkbox) as ShadowRoot;
 
   /**
    * Enable or disable the specified property in this elements.
@@ -120,27 +115,6 @@ export class Template extends Control.Component<Properties> {
   }
 
   /**
-   * Toggles this check by the last toggled check.
-   * @param force Determines whether the same check must be toggled.
-   * @returns Returns the last check or undefined when there is no last check.
-   */
-  @Class.Private()
-  private toggleCheck(force: boolean): Element | undefined {
-    const last = Template.groups[this.group];
-    if (last === this.skeleton) {
-      if (force) {
-        Template.groups[this.group] = void 0;
-      }
-    } else {
-      if (last) {
-        last.checked = false;
-      }
-      Template.groups[this.group] = this.skeleton;
-    }
-    return last;
-  }
-
-  /**
    * Click event handler.
    * @param event Event information.
    */
@@ -148,13 +122,18 @@ export class Template extends Control.Component<Properties> {
   private clickHandler(event: Event): void {
     if (this.input.readOnly) {
       event.preventDefault();
-    } else {
-      if (this.group) {
-        const last = this.toggleCheck(!this.checked);
-        if (last && last !== this.skeleton) {
+    } else if (this.group) {
+      const last = Template.groups[this.group];
+      if (last !== this.skeleton) {
+        if (last) {
+          last.checked = false;
           Template.notifyChanges(last);
         }
+        this.setDataProperty('checked', (this.input.checked = true));
+        Template.groups[this.group] = this.skeleton;
+        Template.notifyChanges(this.skeleton);
       }
+    } else {
       this.setDataProperty('checked', this.input.checked);
       Template.notifyChanges(this.skeleton);
     }
@@ -178,6 +157,8 @@ export class Template extends Control.Component<Properties> {
       group: super.bindDescriptor(this, Template.prototype, 'group'),
       value: super.bindDescriptor(this, Template.prototype, 'value'),
       checked: super.bindDescriptor(this, Template.prototype, 'checked'),
+      defaultValue: super.bindDescriptor(this, Template.prototype, 'defaultValue'),
+      defaultChecked: super.bindDescriptor(this, Template.prototype, 'defaultChecked'),
       required: super.bindDescriptor(this, Template.prototype, 'required'),
       readOnly: super.bindDescriptor(this, Template.prototype, 'readOnly'),
       disabled: super.bindDescriptor(this, Template.prototype, 'disabled')
@@ -199,6 +180,7 @@ export class Template extends Control.Component<Properties> {
    */
   constructor(properties?: Properties, children?: any[]) {
     super(properties, children);
+    DOM.append(this.skeleton.attachShadow({ mode: 'closed' }), this.styles, this.checkbox);
     this.bindHandlers();
     this.bindProperties();
     this.assignProperties();
@@ -261,11 +243,34 @@ export class Template extends Control.Component<Properties> {
    * Set checked state.
    */
   public set checked(state: boolean) {
-    this.setDataProperty('checked', state);
-    this.input.checked = state;
     if (this.group) {
-      this.toggleCheck(!state);
+      const last = Template.groups[this.group];
+      if (state) {
+        if (last && last !== this.skeleton) {
+          last.checked = false;
+        }
+        Template.groups[this.group] = this.skeleton;
+      } else if (last === this.skeleton) {
+        Template.groups[this.group] = void 0;
+      }
     }
+    this.setDataProperty('checked', (this.input.checked = state));
+  }
+
+  /**
+   * Get default checkbox value.
+   */
+  @Class.Public()
+  public get defaultValue(): any {
+    return this.properties.value || 'on';
+  }
+
+  /**
+   * Get default checked state.
+   */
+  @Class.Public()
+  public get defaultChecked(): boolean {
+    return this.properties.checked || false;
   }
 
   /**
@@ -322,6 +327,15 @@ export class Template extends Control.Component<Properties> {
   @Class.Public()
   public get element(): Element {
     return this.skeleton;
+  }
+
+  /**
+   * Reset the checkbox to its initial value and state.
+   */
+  @Class.Public()
+  public reset(): void {
+    this.value = this.defaultValue;
+    this.checked = this.defaultChecked;
   }
 
   /**

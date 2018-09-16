@@ -30,21 +30,11 @@ export declare class Template extends Control.Component<Properties> {
      */
     private skeleton;
     /**
-     * Checkbox elements.
-     */
-    private elements;
-    /**
      * Enable or disable the specified property in this elements.
      * @param property Property name.
      * @param state Determines whether the property must be enabled or disabled.
      */
     protected setDataProperty(property: string, state: boolean): void;
-    /**
-     * Toggles this check by the last toggled check.
-     * @param force Determines whether the same check must be toggled.
-     * @returns Returns the last check or undefined when there is no last check.
-     */
-    private toggleCheck;
     /**
      * Click event handler.
      * @param event Event information.
@@ -97,6 +87,14 @@ export declare class Template extends Control.Component<Properties> {
     */
     checked: boolean;
     /**
+     * Get default checkbox value.
+     */
+    readonly defaultValue: any;
+    /**
+     * Get default checked state.
+     */
+    readonly defaultChecked: boolean;
+    /**
      * Get required state.
      */
     /**
@@ -121,6 +119,10 @@ export declare class Template extends Control.Component<Properties> {
      * Checkbox element.
      */
     readonly element: Element;
+    /**
+     * Reset the checkbox to its initial value and state.
+     */
+    reset(): void;
     /**
      * Checkbox groups.
      */
