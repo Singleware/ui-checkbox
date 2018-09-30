@@ -30,11 +30,11 @@ export declare class Template extends Control.Component<Properties> {
      */
     private skeleton;
     /**
-     * Enable or disable the specified property in this elements.
+     * Updates the specified property state.
      * @param property Property name.
-     * @param state Determines whether the property must be enabled or disabled.
+     * @param state Property state.
      */
-    protected setDataProperty(property: string, state: boolean): void;
+    private updatePropertyState;
     /**
      * Click event handler.
      * @param event Event information.
