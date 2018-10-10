@@ -11,4 +11,8 @@ export interface States {
    * Checkbox name.
    */
   name: string;
+  /**
+   * Determines whether the checkbox must return status or value.
+   */
+  statusOnly: boolean;
 }

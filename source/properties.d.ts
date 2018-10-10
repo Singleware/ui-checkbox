@@ -44,6 +44,10 @@ export interface Properties {
    */
   disabled?: boolean;
   /**
+   * Determines whether the checkbox must return status or value.
+   */
+  statusOnly?: boolean;
+  /**
    * Checkbox children.
    */
   children?: {};

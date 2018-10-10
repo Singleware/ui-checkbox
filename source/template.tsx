@@ -161,7 +161,8 @@ export class Template extends Control.Component<Properties> {
       'defaultChecked',
       'required',
       'readOnly',
-      'disabled'
+      'disabled',
+      'statusOnly'
     ]);
   }
 
@@ -170,7 +171,16 @@ export class Template extends Control.Component<Properties> {
    */
   @Class.Private()
   private assignProperties(): void {
-    this.assignComponentProperties(this.properties, ['name', 'group', 'value', 'checked', 'required', 'readOnly', 'disabled']);
+    this.assignComponentProperties(this.properties, [
+      'name',
+      'group',
+      'value',
+      'checked',
+      'required',
+      'readOnly',
+      'disabled',
+      'statusOnly'
+    ]);
   }
 
   /**
@@ -221,6 +231,9 @@ export class Template extends Control.Component<Properties> {
    */
   @Class.Public()
   public get value(): any {
+    if (this.states.statusOnly) {
+      return this.checked;
+    }
     return this.checked ? this.input.value : void 0;
   }
 
@@ -228,7 +241,11 @@ export class Template extends Control.Component<Properties> {
    * Set checkbox value.
    */
   public set value(value: any) {
-    this.input.value = value;
+    if (this.states.statusOnly) {
+      this.checked = Boolean(value);
+    } else {
+      this.input.value = value;
+    }
   }
 
   /**
@@ -319,6 +336,21 @@ export class Template extends Control.Component<Properties> {
   public set disabled(state: boolean) {
     this.input.disabled = state;
     this.updatePropertyState('disabled', state);
+  }
+
+  /**
+   * Get status-only state.
+   */
+  @Class.Public()
+  public get statusOnly(): boolean {
+    return this.states.statusOnly;
+  }
+
+  /**
+   * Set status-only state.
+   */
+  public set statusOnly(state: boolean) {
+    this.states.statusOnly = state;
   }
 
   /**

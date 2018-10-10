@@ -43,4 +43,8 @@ export interface Element extends HTMLDivElement {
    * Disabled state.
    */
   disabled: boolean;
+  /**
+   * Status-only state.
+   */
+  statusOnly?: boolean;
 }

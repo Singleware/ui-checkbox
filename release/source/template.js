@@ -150,14 +150,24 @@ let Template = Template_1 = class Template extends Control.Component {
             'defaultChecked',
             'required',
             'readOnly',
-            'disabled'
+            'disabled',
+            'statusOnly'
         ]);
     }
     /**
      * Assign all element properties.
      */
     assignProperties() {
-        this.assignComponentProperties(this.properties, ['name', 'group', 'value', 'checked', 'required', 'readOnly', 'disabled']);
+        this.assignComponentProperties(this.properties, [
+            'name',
+            'group',
+            'value',
+            'checked',
+            'required',
+            'readOnly',
+            'disabled',
+            'statusOnly'
+        ]);
     }
     /**
      * Get checkbox name.
@@ -187,13 +197,21 @@ let Template = Template_1 = class Template extends Control.Component {
      * Get checkbox value.
      */
     get value() {
+        if (this.states.statusOnly) {
+            return this.checked;
+        }
         return this.checked ? this.input.value : void 0;
     }
     /**
      * Set checkbox value.
      */
     set value(value) {
-        this.input.value = value;
+        if (this.states.statusOnly) {
+            this.checked = Boolean(value);
+        }
+        else {
+            this.input.value = value;
+        }
     }
     /**
      * Get checked state.
@@ -269,6 +287,18 @@ let Template = Template_1 = class Template extends Control.Component {
     set disabled(state) {
         this.input.disabled = state;
         this.updatePropertyState('disabled', state);
+    }
+    /**
+     * Get status-only state.
+     */
+    get statusOnly() {
+        return this.states.statusOnly;
+    }
+    /**
+     * Set status-only state.
+     */
+    set statusOnly(state) {
+        this.states.statusOnly = state;
     }
     /**
      * Checkbox element.
@@ -356,6 +386,9 @@ __decorate([
 __decorate([
     Class.Public()
 ], Template.prototype, "disabled", null);
+__decorate([
+    Class.Public()
+], Template.prototype, "statusOnly", null);
 __decorate([
     Class.Public()
 ], Template.prototype, "element", null);
